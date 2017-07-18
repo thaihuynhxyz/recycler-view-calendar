@@ -30,6 +30,14 @@ class CalendarSnapHelper extends LinearSnapHelper {
     private int mSnapPosition;
 
     @Override
+    public View findSnapView(RecyclerView.LayoutManager layoutManager) {
+        if (layoutManager.canScrollHorizontally()) {
+            return findCenterView(layoutManager, getHorizontalHelper(layoutManager));
+        }
+        return null;
+    }
+
+    @Override
     public int findTargetSnapPosition(RecyclerView.LayoutManager layoutManager, int velocityX, int velocityY) {
         final int itemCount = layoutManager.getItemCount();
         if (itemCount == 0) {
@@ -68,6 +76,47 @@ class CalendarSnapHelper extends LinearSnapHelper {
                 ? (forwardDirection ? centerPosition - 49 : centerPosition)
                 : (forwardDirection ? centerPosition + 49 : centerPosition);
         return mSnapPosition;
+    }
+
+    /**
+     * Return the child view that is currently closest to the center of this parent.
+     *
+     * @param layoutManager The {@link RecyclerView.LayoutManager} associated with the attached
+     *                      {@link RecyclerView}.
+     * @param helper        The relevant {@link OrientationHelper} for the attached {@link RecyclerView}.
+     * @return the child view that is currently closest to the center of this parent.
+     */
+    @Nullable
+    private View findCenterView(RecyclerView.LayoutManager layoutManager,
+                                OrientationHelper helper) {
+        int childCount = layoutManager.getChildCount();
+        if (childCount == 0) {
+            return null;
+        }
+
+        View closestChild = null;
+        final int center;
+        if (layoutManager.getClipToPadding()) {
+            center = helper.getStartAfterPadding() + helper.getTotalSpace() / 2;
+        } else {
+            center = helper.getEnd() / 2;
+        }
+        int absClosest = Integer.MAX_VALUE;
+
+        for (int i = 0; i < childCount; i++) {
+            final View child = layoutManager.getChildAt(i);
+            if (layoutManager.getPosition(child) % 49 != 24) continue;
+            int childCenter = helper.getDecoratedStart(child)
+                    + (helper.getDecoratedMeasurement(child) / 2);
+            int absDistance = Math.abs(childCenter - center);
+
+            /** if child center is closer than previous closest, set it as closest  **/
+            if (absDistance < absClosest) {
+                absClosest = absDistance;
+                closestChild = child;
+            }
+        }
+        return closestChild;
     }
 
     /**

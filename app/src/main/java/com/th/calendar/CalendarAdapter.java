@@ -3,7 +3,6 @@ package com.th.calendar;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +13,6 @@ import java.util.Date;
 import java.util.List;
 
 class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private static final String TAG = CalendarAdapter.class.getSimpleName();
 
     private static final int DAY_PER_WEEK = 7;
     private static final int MONTH_PER_YEAR = 12;
@@ -49,8 +46,6 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         for (int i = 0; i < 7; i++) {
             System.arraycopy(rotateMatrix[i], 0, mCalendarMatrix, i * 7 + 1, 6);
         }
-
-        Log.d(TAG, "");
     }
 
     @Override
@@ -102,7 +97,6 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         title = "S";
                         break;
                 }
-                Log.d(TAG, "onBindViewHolder: viewType = TYPE_TITLE, position = " + position + ", title = " + title);
                 ((TitleViewHolder) holder).title.setText(title);
                 break;
             case TYPE_DAY:
@@ -114,12 +108,13 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 int dayPosition = mCalendarMatrix[position % ITEM_PER_MONTH];
                 if (dayPosition >= firstDayIndex && dayPosition < firstDayOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH) + firstDayIndex) {
                     firstDayOfMonth.add(Calendar.DAY_OF_MONTH, dayPosition - firstDayIndex);
-                    Log.d(TAG, "onBindViewHolder: viewType = TYPE_DAY, position = " + position + ", title = " + "d");
                     ((DayViewHolder) holder).day.setVisibility(View.VISIBLE);
                     ((DayViewHolder) holder).day.setText(String.valueOf(firstDayOfMonth.get(Calendar.DAY_OF_MONTH)));
                     for (Date date : mData) {
                         if (date.compareTo(firstDayOfMonth.getTime()) == 0) {
                             ((DayViewHolder) holder).day.setBackgroundColor(Color.BLUE);
+                        } else {
+                            ((DayViewHolder) holder).day.setBackgroundColor(Color.TRANSPARENT);
                         }
                     }
                 } else {
@@ -147,7 +142,6 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     void setDimensions(int itemWidth) {
-        Log.d(TAG, "setDimensions: itemWidth = " + itemWidth);
         mItemWidth = itemWidth;
     }
 
