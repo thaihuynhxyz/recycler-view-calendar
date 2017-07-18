@@ -65,7 +65,24 @@ public class CalendarView extends ConstraintLayout {
                 }
             }
         });
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
+            boolean mScrolled = true;
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && mScrolled) {
+                    mScrolled = false;
+                    mMonthView.setText(String.format("%tB", mAdapter.getFirstDayOfMonth(snapHelper.getSnapPosition())));
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dx != 0 || dy != 0) mScrolled = true;
+            }
+        });
     }
 
     public void setData(List<Date> data) {

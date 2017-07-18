@@ -23,6 +23,8 @@ import android.view.View;
  */
 class CalendarSnapHelper extends LinearSnapHelper {
 
+    static final int ITEM_PER_MONTH = 49;
+
     // Orientation helpers are lazily created per LayoutManager.
     @Nullable
     private OrientationHelper mHorizontalHelper;
@@ -52,7 +54,7 @@ class CalendarSnapHelper extends LinearSnapHelper {
         if (mStartMostChildView == null) {
             return RecyclerView.NO_POSITION;
         }
-        final int centerPosition = layoutManager.getPosition(mStartMostChildView) / 49 * 49 + 24;
+        final int centerPosition = layoutManager.getPosition(mStartMostChildView) / ITEM_PER_MONTH * ITEM_PER_MONTH + ITEM_PER_MONTH / 2;
         if (centerPosition == RecyclerView.NO_POSITION) {
             return RecyclerView.NO_POSITION;
         }
@@ -73,8 +75,8 @@ class CalendarSnapHelper extends LinearSnapHelper {
             }
         }
         mSnapPosition = reverseLayout
-                ? (forwardDirection ? centerPosition - 49 : centerPosition)
-                : (forwardDirection ? centerPosition + 49 : centerPosition);
+                ? (forwardDirection ? centerPosition - ITEM_PER_MONTH : centerPosition)
+                : (forwardDirection ? centerPosition + ITEM_PER_MONTH : centerPosition);
         return mSnapPosition;
     }
 
@@ -105,12 +107,12 @@ class CalendarSnapHelper extends LinearSnapHelper {
 
         for (int i = 0; i < childCount; i++) {
             final View child = layoutManager.getChildAt(i);
-            if (layoutManager.getPosition(child) % 49 != 24) continue;
+            if (layoutManager.getPosition(child) % ITEM_PER_MONTH != ITEM_PER_MONTH / 2) continue;
             int childCenter = helper.getDecoratedStart(child)
                     + (helper.getDecoratedMeasurement(child) / 2);
             int absDistance = Math.abs(childCenter - center);
 
-            /** if child center is closer than previous closest, set it as closest  **/
+            // if child center is closer than previous closest, set it as closest
             if (absDistance < absClosest) {
                 absClosest = absDistance;
                 closestChild = child;
@@ -159,7 +161,7 @@ class CalendarSnapHelper extends LinearSnapHelper {
         return mHorizontalHelper;
     }
 
-    public int getSnapPosition() {
+    int getSnapPosition() {
         return mSnapPosition;
     }
 }
