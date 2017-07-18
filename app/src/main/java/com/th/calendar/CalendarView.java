@@ -14,6 +14,9 @@ import android.widget.TextView;
 import java.util.Date;
 import java.util.List;
 
+import static com.th.calendar.CalendarAdapter.TYPE_DAY;
+import static com.th.calendar.CalendarAdapter.TYPE_TITLE;
+
 public class CalendarView extends ConstraintLayout {
 
     private CalendarAdapter mAdapter;
@@ -33,16 +36,29 @@ public class CalendarView extends ConstraintLayout {
 
         final TextView mMonthView = root.findViewById(R.id.month);
         final RecyclerView recyclerView = root.findViewById(R.id.days);
-        recyclerView.setLayoutManager(new GridLayoutManager(context, 7, LinearLayoutManager.HORIZONTAL, true));
-
         mAdapter = new CalendarAdapter();
+        GridLayoutManager layoutManager = new GridLayoutManager(context, 13, LinearLayoutManager.HORIZONTAL, true);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                switch (mAdapter.getItemViewType(position)) {
+                    case TYPE_TITLE:
+                        return 1;
+                    case TYPE_DAY:
+                        return 2;
+                    default:
+                        return -1;
+                }
+            }
+        });
+        recyclerView.setLayoutManager(layoutManager);
+
         final CalendarSnapHelper snapHelper = new CalendarSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
         recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                mAdapter.setDimensions(recyclerView.getMeasuredWidth() / 7, (recyclerView.getHeight() - context.getResources().getDimensionPixelSize(R.dimen.dp22)) / 6);
-                mAdapter.notifyDataSetChanged();
+                mAdapter.setDimensions(recyclerView.getMeasuredWidth() / 7);
                 recyclerView.setAdapter(mAdapter);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);

@@ -1,6 +1,7 @@
 package com.th.calendar;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,14 +20,38 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int DAY_PER_WEEK = 7;
     private static final int MONTH_PER_YEAR = 12;
     private static final int ITEM_PER_MONTH = 49;
-    private static final int TYPE_TITLE = 0;
-    private static final int TYPE_DAY = 1;
+    static final int TYPE_TITLE = 0;
+    static final int TYPE_DAY = 1;
 
     private Calendar mStartCalendar = Calendar.getInstance();
     private Calendar mEndCalendar = Calendar.getInstance();
     private List<Date> mData;
+    private int[] mCalendarMatrix = new int[49];
     private int mItemWidth;
-    private int mItemHeight;
+
+    CalendarAdapter() {
+        int[][] matrix = new int[7][7];
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                matrix[i][j] = i * 7 + j;
+            }
+        }
+
+        // rotate -90
+        int[][] rotateMatrix = new int[7][7];
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                rotateMatrix[i][j] = matrix[j][6 - i];
+            }
+        }
+
+        // translate y + 1
+        for (int i = 0; i < 7; i++) {
+            System.arraycopy(rotateMatrix[i], 0, mCalendarMatrix, i * 7 + 1, 6);
+        }
+
+        Log.d(TAG, "");
+    }
 
     @Override
     public int getItemViewType(int position) {
@@ -40,16 +65,11 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case TYPE_TITLE:
                 View titleView = LayoutInflater.from(context).inflate(R.layout.title_view_holder, parent, false);
                 titleView.getLayoutParams().width = mItemWidth;
-
-                Log.d(TAG, "onCreateViewHolder: viewType = TYPE_TITLE, width = " + mItemWidth);
                 return new CalendarAdapter.TitleViewHolder(titleView);
             case TYPE_DAY:
             default:
                 View itemView = LayoutInflater.from(context).inflate(R.layout.day_view_holder, parent, false);
-                ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-                layoutParams.width = mItemWidth;
-                layoutParams.height = mItemHeight;
-                Log.d(TAG, "onCreateViewHolder: viewType = TYPE_DAY, width = " + mItemWidth + ", height = " + mItemHeight);
+                itemView.getLayoutParams().width = mItemWidth;
                 return new DayViewHolder(itemView);
         }
     }
@@ -86,8 +106,25 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 ((TitleViewHolder) holder).title.setText(title);
                 break;
             case TYPE_DAY:
-                Log.d(TAG, "onBindViewHolder: viewType = TYPE_DAY, position = " + position + ", title = " + "d");
-                ((DayViewHolder) holder).day.setText(String.valueOf(position));
+                Calendar firstDayOfMonth = (Calendar) mEndCalendar.clone();
+                firstDayOfMonth.add(Calendar.MONTH, -position / ITEM_PER_MONTH);
+                firstDayOfMonth.set(Calendar.DAY_OF_MONTH, 1);
+
+                int firstDayIndex = firstDayOfMonth.get(Calendar.DAY_OF_WEEK) - 1;
+                int dayPosition = mCalendarMatrix[position % ITEM_PER_MONTH];
+                if (dayPosition >= firstDayIndex && dayPosition < firstDayOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH) + firstDayIndex) {
+                    firstDayOfMonth.add(Calendar.DAY_OF_MONTH, dayPosition - firstDayIndex);
+                    Log.d(TAG, "onBindViewHolder: viewType = TYPE_DAY, position = " + position + ", title = " + "d");
+                    ((DayViewHolder) holder).day.setVisibility(View.VISIBLE);
+                    ((DayViewHolder) holder).day.setText(String.valueOf(firstDayOfMonth.get(Calendar.DAY_OF_MONTH)));
+                    for (Date date : mData) {
+                        if (date.compareTo(firstDayOfMonth.getTime()) == 0) {
+                            ((DayViewHolder) holder).day.setBackgroundColor(Color.BLUE);
+                        }
+                    }
+                } else {
+                    ((DayViewHolder) holder).day.setVisibility(View.INVISIBLE);
+                }
                 break;
         }
     }
@@ -109,10 +146,9 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mData = data;
     }
 
-    void setDimensions(int itemWidth, int itemHeight) {
-        Log.d(TAG, "setDimensions: itemWidth = " + itemWidth + ", itemHeight = " + itemHeight);
+    void setDimensions(int itemWidth) {
+        Log.d(TAG, "setDimensions: itemWidth = " + itemWidth);
         mItemWidth = itemWidth;
-        mItemHeight = itemHeight;
     }
 
     private static class TitleViewHolder extends RecyclerView.ViewHolder {
