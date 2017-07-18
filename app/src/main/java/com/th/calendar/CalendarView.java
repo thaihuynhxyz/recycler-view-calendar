@@ -11,14 +11,16 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import static com.th.calendar.CalendarAdapter.TYPE_DAY;
 import static com.th.calendar.CalendarAdapter.TYPE_TITLE;
 
-public class CalendarView extends ConstraintLayout {
+public class CalendarView extends ConstraintLayout implements View.OnClickListener {
 
+    private CalendarSnapHelper mSnapHelper;
     private CalendarAdapter mAdapter;
 
     public CalendarView(Context context) {
@@ -34,7 +36,9 @@ public class CalendarView extends ConstraintLayout {
     void init(final Context context, AttributeSet attrs) {
         View root = inflate(context, R.layout.calendar_view, this);
 
-        final TextView mMonthView = root.findViewById(R.id.month);
+        final TextView monthView = root.findViewById(R.id.month);
+        final View nextView = root.findViewById(R.id.next);
+        final View prevView = root.findViewById(R.id.prev);
         final RecyclerView recyclerView = root.findViewById(R.id.days);
         mAdapter = new CalendarAdapter();
         GridLayoutManager layoutManager = new GridLayoutManager(context, 13, LinearLayoutManager.HORIZONTAL, true);
@@ -53,8 +57,8 @@ public class CalendarView extends ConstraintLayout {
         });
         recyclerView.setLayoutManager(layoutManager);
 
-        final CalendarSnapHelper snapHelper = new CalendarSnapHelper();
-        snapHelper.attachToRecyclerView(recyclerView);
+        mSnapHelper = new CalendarSnapHelper();
+        mSnapHelper.attachToRecyclerView(recyclerView);
         recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -67,22 +71,25 @@ public class CalendarView extends ConstraintLayout {
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
-            boolean mScrolled = true;
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if (newState == RecyclerView.SCROLL_STATE_IDLE && mScrolled) {
-                    mScrolled = false;
-                    mMonthView.setText(String.format("%tB", mAdapter.getFirstDayOfMonth(snapHelper.getSnapPosition())));
-                }
-            }
+            int mSnapPosition = -1;
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (dx != 0 || dy != 0) mScrolled = true;
+                int snapPosition = mSnapHelper.getSnapPosition();
+                if (snapPosition != mSnapPosition) {
+                    mSnapPosition = snapPosition;
+                    Calendar currentMonthCalendar = mAdapter.getFirstDayOfMonth(mSnapHelper.getSnapPosition());
+                    int currentMonth = currentMonthCalendar.get(Calendar.MONTH);
+                    nextView.setVisibility(currentMonth == mAdapter.getEndCalendar().get(Calendar.MONTH) ? GONE : VISIBLE);
+                    prevView.setVisibility(currentMonth == mAdapter.getStartCalendar().get(Calendar.MONTH) ? GONE : VISIBLE);
+
+                    monthView.setText(String.format("%tB", currentMonthCalendar));
+                }
             }
         });
+
+        nextView.setOnClickListener(this);
+        prevView.setOnClickListener(this);
     }
 
     public void setData(List<Date> data) {
@@ -91,5 +98,17 @@ public class CalendarView extends ConstraintLayout {
 
     public void notifyDataSetChanged() {
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.next:
+                mSnapHelper.next();
+                break;
+            case R.id.prev:
+                mSnapHelper.prev();
+                break;
+        }
     }
 }

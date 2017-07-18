@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
         CalendarView calendarView = (CalendarView) findViewById(R.id.calendar_view);
 
-        // fake mData
+        // fake data
         List<Date> dateList = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
         calendar.set(2017, 0, 1);

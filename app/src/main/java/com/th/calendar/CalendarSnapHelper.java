@@ -31,6 +31,8 @@ class CalendarSnapHelper extends LinearSnapHelper {
 
     private int mSnapPosition;
 
+    private RecyclerView mRecyclerView;
+
     @Override
     public View findSnapView(RecyclerView.LayoutManager layoutManager) {
         if (layoutManager.canScrollHorizontally()) {
@@ -161,7 +163,23 @@ class CalendarSnapHelper extends LinearSnapHelper {
         return mHorizontalHelper;
     }
 
+    @Override
+    public void attachToRecyclerView(@Nullable RecyclerView recyclerView) throws IllegalStateException {
+        super.attachToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
+    }
+
     int getSnapPosition() {
         return mSnapPosition;
+    }
+
+    void next() {
+        mSnapPosition -= ITEM_PER_MONTH;
+        mRecyclerView.smoothScrollToPosition(mSnapPosition);
+    }
+
+    void prev() {
+        mSnapPosition += ITEM_PER_MONTH;
+        mRecyclerView.smoothScrollToPosition(mSnapPosition);
     }
 }

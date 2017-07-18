@@ -107,13 +107,6 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (dayPosition >= firstDayIndex && dayPosition < calendar.getActualMaximum(Calendar.DAY_OF_MONTH) + firstDayIndex) {
                     ((DayViewHolder) holder).day.setVisibility(View.VISIBLE);
                     ((DayViewHolder) holder).day.setText(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH) + dayPosition - firstDayIndex));
-//                    for (Date date : mData) {
-//                        if (date.getMonth()) {
-//                            ((DayViewHolder) holder).day.setBackgroundColor(Color.BLUE);
-//                        } else {
-//                            ((DayViewHolder) holder).day.setBackgroundColor(Color.TRANSPARENT);
-//                        }
-//                    }
                 } else {
                     ((DayViewHolder) holder).day.setVisibility(View.INVISIBLE);
                 }
@@ -135,6 +128,14 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         calendar.add(Calendar.MONTH, -position / ITEM_PER_MONTH);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         return calendar;
+    }
+
+    Calendar getStartCalendar() {
+        return mStartCalendar;
+    }
+
+    Calendar getEndCalendar() {
+        return mEndCalendar;
     }
 
     void setData(List<Date> data) {
