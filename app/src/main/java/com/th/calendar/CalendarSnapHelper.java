@@ -182,4 +182,9 @@ class CalendarSnapHelper extends LinearSnapHelper {
         mSnapPosition += ITEM_PER_MONTH;
         mRecyclerView.smoothScrollToPosition(mSnapPosition);
     }
+
+    void gotoMonth(int month) {
+        mSnapPosition += month * ITEM_PER_MONTH;
+        mRecyclerView.scrollToPosition(mSnapPosition);
+    }
 }

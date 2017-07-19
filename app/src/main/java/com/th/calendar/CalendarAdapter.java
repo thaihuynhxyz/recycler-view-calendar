@@ -8,21 +8,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 import static com.th.calendar.CalendarSnapHelper.ITEM_PER_MONTH;
 
 class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int DAY_PER_WEEK = 7;
-    private static final int MONTH_PER_YEAR = 12;
+    static final int MONTH_PER_YEAR = 12;
     static final int TYPE_TITLE = 0;
     static final int TYPE_DAY = 1;
-
-    private Calendar mStartCalendar = Calendar.getInstance();
-    private Calendar mEndCalendar = Calendar.getInstance();
-    private List<Date> mData;
+    private static final int DAY_PER_WEEK = 7;
+    private Calendar mStartCalendar;
+    private Calendar mEndCalendar;
     private int[] mCalendarMatrix = new int[49];
     private int mItemWidth;
 
@@ -116,16 +112,15 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        if (mData == null || mData.isEmpty()) return 0;
-        mStartCalendar.setTime(mData.get(mData.size() - 1));
-        mEndCalendar.setTime(mData.get(0));
-
+        if (mStartCalendar == null || mEndCalendar == null) return 0;
         return ((mEndCalendar.get(Calendar.YEAR) - mStartCalendar.get(Calendar.YEAR)) * MONTH_PER_YEAR + mEndCalendar.get(Calendar.MONTH) - mStartCalendar.get(Calendar.MONTH) + 1) * ITEM_PER_MONTH;
     }
 
     Calendar getFirstDayOfMonth(int position) {
         Calendar calendar = (Calendar) mEndCalendar.clone();
-        calendar.add(Calendar.MONTH, -position / ITEM_PER_MONTH);
+        int monthDistance = -position / ITEM_PER_MONTH;
+        calendar.add(Calendar.YEAR, monthDistance / MONTH_PER_YEAR);
+        calendar.add(Calendar.MONTH, monthDistance % MONTH_PER_YEAR);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         return calendar;
     }
@@ -134,12 +129,16 @@ class CalendarAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return mStartCalendar;
     }
 
+    void setStartCalendar(Calendar startCalendar) {
+        mStartCalendar = startCalendar;
+    }
+
     Calendar getEndCalendar() {
         return mEndCalendar;
     }
 
-    void setData(List<Date> data) {
-        mData = data;
+    void setEndCalendar(Calendar endCalendar) {
+        mEndCalendar = endCalendar;
     }
 
     void setDimensions(int itemWidth) {
