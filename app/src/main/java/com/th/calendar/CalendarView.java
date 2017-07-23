@@ -22,16 +22,19 @@ public class CalendarView extends ConstraintLayout implements View.OnClickListen
     private CalendarSnapHelper mSnapHelper;
 
     public CalendarView(Context context) {
-        super(context);
-        init(context, null);
+        this(context, null);
     }
 
     public CalendarView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+        this(context, attrs, 0);
     }
 
-    void init(final Context context, AttributeSet attrs) {
+    public CalendarView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context);
+    }
+
+    void init(final Context context) {
         View root = inflate(context, R.layout.calendar_view, this);
 
         final TextView monthView = root.findViewById(R.id.month);
@@ -94,7 +97,7 @@ public class CalendarView extends ConstraintLayout implements View.OnClickListen
                     nextView.setVisibility(currentMonth == endCalendar.get(Calendar.MONTH) && currentYear == endCalendar.get(Calendar.YEAR) ? GONE : VISIBLE);
                     prevView.setVisibility(currentMonth == startCalendar.get(Calendar.MONTH) && currentYear == startCalendar.get(Calendar.YEAR) ? GONE : VISIBLE);
 
-                    monthView.setText(String.format("%tB", currentMonthCalendar));
+                    monthView.setText(String.format("%tB %s", currentMonthCalendar, currentYear != Calendar.getInstance().get(Calendar.YEAR) ? currentYear : "").trim());
                 }
             }
         });
